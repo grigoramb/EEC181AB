@@ -16,6 +16,7 @@ int main(void)
 
 	int switch_value;
 	int key_value;
+	int last_key = 0;
 
 	int H = 0x76;
 	int E = 0x79;
@@ -37,23 +38,7 @@ int main(void)
         int i1 = 0;	
 	while (1)
 	{
-          switch_value = *(switchptr);
-	  *(led) = switch_value; // show switch status on LEDs
-	  key_value = *(keyptr);
-	  if(key_value == 1) // KEY0
-	  { 
-	    mode = !mode;
-	    custom[5] = 0x7F & switch_value; 
-	    custom[4] = 0x7 & (switch_value>>7);
-	  }
-	  if(key_value == 2) // KEY1
-	    delayamt += 1000;
-	  if(key_value == 4) // KEY2
-	    delayamt -= 1000;
-	  if(key_value == 8) // KEY3
-	    pause = !pause;
-	  if(key_value)
-	    for ( c = 1; c <= 20000; c++ );
+        
 
 	  
 	  if(mode == HELLO){
@@ -66,9 +51,35 @@ int main(void)
 		*(hex3hex0) = (custom[i+2]<<24) + (custom[i+3]<<16) + (custom[i+4]<<8) + custom[i+5];
        		i = (i+ !pause)%7;
 	   }
-		for ( c = 1 ; c <= delayamt ; c++ )
-		for ( d = 1 ; d <= delayamt ; d++ )
-		{}
+
+	  // delay loop with polling
+		for ( c = 0 ; c <= delayamt ; c++ )
+		  {
+
+		    for ( d = 1 ; d <= delayamt ; d++ );
+		
+		    switch_value = *(switchptr);
+		    *(led) = switch_value; // show switch status on LEDs
+		    key_value = *(keyptr);
+		    if(key_value != last_key){
+		      if(key_value == 1) // KEY0
+			{ 
+			  mode = !mode;
+			  custom[5] = 0x7F & switch_value; 
+			  custom[4] = 0x7 & (switch_value>>7);
+			}
+		      if(key_value == 2) // KEY1
+			delayamt += 1000;
+		      if(key_value == 4 && delayamt > 1000) // KEY2
+			delayamt -= 1000;
+		      if(key_value == 8) // KEY3
+			pause = !pause;
+		      //if(key_value){
+		      //	while(*(keyptr));
+		      //}
+		      last_key = key_value;
+		    }
+		}
 
 		
 
